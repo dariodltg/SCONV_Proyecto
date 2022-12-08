@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="Google.Cloud.Dialogflow.V2" Version="4.5.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
   </ItemGroup>
 

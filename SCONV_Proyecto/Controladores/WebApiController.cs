@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using static Google.Rpc.Context.AttributeContext.Types;
 using System.Net;
 
-namespace SCONV_Proyecto.Controllers
+namespace SCONV_Proyecto.Controladores
 {
     [ApiController]
     [Route("[controller]")]
