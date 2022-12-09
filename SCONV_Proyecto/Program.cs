@@ -1,10 +1,11 @@
 using SCONV_Proyecto;
+using System.Runtime.CompilerServices;
 
 //Inicializar base de datos
 FachadaBbdd.GetSingleton();
 
-var a = FachadaBbdd.GetSingleton().GetEstablecimientos();
-
+//Iniciar Ngrok
+//Ngrok.IniciarNGrok();
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

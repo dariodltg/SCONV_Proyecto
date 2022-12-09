@@ -68,6 +68,11 @@ namespace SCONV_Proyecto
             return bbddConnection.Platos.ToList();
         }
 
+        public Establecimiento GetEstablecimientoByNombre(string nombre)
+        {
+            return bbddConnection.Establecimientos.First(x => x.Nombre == nombre);
+        }
+
         /// <summary>
         /// Método para insertar datos de prueba de establecimientos y platos en la base de datos
         /// </summary>

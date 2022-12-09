@@ -5,6 +5,9 @@
         public uint Id { get; set; }
         public List<Plato> PlatosPedidos { get; set; }
 
+        public static Pedido pedidoEnCurso = new Pedido();
+        public static Establecimiento establecimientoEnCurso;
+
         /// <summary>
         /// Devuelve una cadena que representa el pedido completo
         /// </summary>
@@ -26,6 +29,11 @@
         public double GetPrecioTotal()
         {
             return PlatosPedidos.Select(x => x.Precio).Sum();
+        }
+
+        public static void AddPlatoAPedidoEnCurso(Plato plato)
+        {
+            pedidoEnCurso.PlatosPedidos.Add(plato);
         }
     }
 }
