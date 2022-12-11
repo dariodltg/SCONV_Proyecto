@@ -33,10 +33,68 @@ namespace SCONV_Proyecto.Controladores
                 case "pedirComida.elegirPlatos.noMasPlatos.confirmarPedido":
                     respuesta.FulfillmentText = ConfirmarPedido();
                     break;
+                case "pedirComida.elegirPlatos.quitarUltimoPlato":
+                    respuesta.FulfillmentText = QuitarUltimoPlato();
+                    break;
+                case "pedirComida.cancelarPedido":
+                    respuesta.FulfillmentText = CancelarPedido();
+                    break;
+                case "pedirComida.cancelarPedido.confirmarCancelacion":
+                    respuesta.FulfillmentText = ConfirmarCancelacionPedido();
+                    break;
+                case "pedirComida.cancelarPedido.cancelarCancelacion":
+                    respuesta.FulfillmentText = CancelarCancelacionPedido();
+                    break;
+
                 default: 
                     break;
             }
             return respuesta;
+        }
+
+        /// <summary>
+        /// Devuelve la frase para iniciar la cancelación del pedido
+        /// </summary>
+        /// <returns>la frase de respuesta</returns>
+        private static string CancelarPedido()
+        {
+            string frase = "El pedido se va a cancelar. ¿Está seguro?";
+            return frase;
+        }
+
+        /// <summary>
+        /// Devuelve la frase para indicar que el pedido no ha sido cancelado.
+        /// </summary>
+        /// <returns>La frase de respuesta</returns>
+        private static string CancelarCancelacionPedido()
+        {
+            string frase = "El pedido no se ha cancelado. ¿Qué desea?";
+            return frase;
+        }
+
+        /// <summary>
+        /// Devuelve la frase para indicar que el pedido se ha cancelado definitivamente.
+        /// </summary>
+        /// <returns>La frase de respuesta</returns>
+        private static string ConfirmarCancelacionPedido()
+        {
+            string frase = "El pedido se ha cancelado.";
+            Pedido.pedidoEnCurso.PlatosPedidos.Clear(); //Vaciamos los platos del pedido en curso porque se ha cancelado
+            return frase;
+        }
+
+        
+
+        /// <summary>
+        /// Devuelve la frase que indica que se ha quitado el último plato del pedido.
+        /// </summary>
+        /// <returns>La frase de respuesta</returns>
+        private static string QuitarUltimoPlato()
+        {
+            Plato ultimoPlato = Pedido.pedidoEnCurso.PlatosPedidos.Last();
+            Pedido.pedidoEnCurso.PlatosPedidos.Remove(ultimoPlato);
+            string frase = "Quitado plato "+ultimoPlato.Nombre +" del pedido. ¿Desea algo más?";
+            return frase;
         }
 
         /// <summary>
@@ -46,7 +104,7 @@ namespace SCONV_Proyecto.Controladores
         private static string ConfirmarPedido()
         {
             string frase = "Pedido confirmado. Muchas gracias.";
-            Pedido.pedidoEnCurso.PlatosPedidos.Clear(); //Vaciamos los platos del pedido en curso
+            Pedido.pedidoEnCurso.PlatosPedidos.Clear(); //Vaciamos los platos del pedido en curso porque se ha confirmado
             return frase;
         }
 
@@ -78,7 +136,7 @@ namespace SCONV_Proyecto.Controladores
         /// <returns>La frase completa de respuesta</returns>
         public static string EnumerarEstablecimientos(string fraseInicial)
         {
-            string frase = fraseInicial + "Las opciones son: ";
+            string frase = fraseInicial + " Las opciones son: ";
             int i = 1;
             List<Establecimiento> establecimientos = FachadaBbdd.GetSingleton().GetEstablecimientos();
             int numEstablecimientos = establecimientos.Count;
@@ -147,7 +205,7 @@ namespace SCONV_Proyecto.Controladores
             {
                 frase = frase + "No hay opciones disponibles.";
             }
-            frase = frase + "¿Qué desea?";
+            frase = frase + " ¿Qué desea?";
             Pedido.establecimientoEnCurso = establecimiento; //Seteamos el establecimiento al que se está pidiendo
             return frase;
         }
