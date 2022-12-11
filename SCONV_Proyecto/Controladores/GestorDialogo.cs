@@ -9,6 +9,7 @@ namespace SCONV_Proyecto.Controladores
         {
             WebhookResponse respuesta = new WebhookResponse();
             //en funcion del intent y del contexto hacemos cosas
+            Console.WriteLine(peticion.QueryResult.Intent.DisplayName);
             switch (peticion.QueryResult.Intent.DisplayName)
             {
                 case "pedirComida.inicio":
@@ -20,10 +21,54 @@ namespace SCONV_Proyecto.Controladores
                 case "pedirComida.elegirPlatos":
                     respuesta.FulfillmentText = AddPlatoAPedido(peticion);
                     break;
+                case "pedirComida.elegirPlatos.masPlatos":
+                    respuesta.FulfillmentText = MasPlatos();
+                    break;
+                case "pedirComida.elegirPlatos.noMasPlatos":
+                    respuesta.FulfillmentText = ResumirPedidoCompleto();
+                    break;
+                case "pedirComida.elegirPlatos.noMasPlatos.continuarPedido":
+                    respuesta.FulfillmentText = MasPlatos();
+                    break;
+                case "pedirComida.elegirPlatos.noMasPlatos.confirmarPedido":
+                    respuesta.FulfillmentText = ConfirmarPedido();
+                    break;
                 default: 
                     break;
             }
             return respuesta;
+        }
+
+        /// <summary>
+        /// Devuelve una frase de confirmación del pedido
+        /// </summary>
+        /// <returns>La frase de respuesta</returns>
+        private static string ConfirmarPedido()
+        {
+            string frase = "Pedido confirmado. Muchas gracias.";
+            Pedido.pedidoEnCurso.PlatosPedidos.Clear(); //Vaciamos los platos del pedido en curso
+            return frase;
+        }
+
+        /// <summary>
+        /// Devuelve una frase para preguntar si quiere más platos
+        /// </summary>
+        /// <returns>La frase de respuesta</returns>
+        private static string MasPlatos()
+        {
+            string frase = "De acuerdo. ¿Qué más quiere pedir?";
+            return frase;
+        }
+
+        /// <summary>
+        /// Devuelve una frase para resumir el pedido completo que lleva el usuario hasta el momento
+        /// </summary>
+        /// <returns>La frase completa de respuesta</returns>
+        private static string ResumirPedidoCompleto()
+        {
+            string frase = Pedido.pedidoEnCurso.ResumirPedido();
+
+            return frase;
         }
 
         /// <summary>
@@ -37,22 +82,29 @@ namespace SCONV_Proyecto.Controladores
             int i = 1;
             List<Establecimiento> establecimientos = FachadaBbdd.GetSingleton().GetEstablecimientos();
             int numEstablecimientos = establecimientos.Count;
-            foreach (Establecimiento establecimiento in establecimientos)
+            if (numEstablecimientos > 1)
             {
-                if (i < numEstablecimientos)
+                foreach (Establecimiento establecimiento in establecimientos)
                 {
-                    frase = frase + establecimiento.ToString();
-                    if(i < numEstablecimientos - 1)
+                    if (i < numEstablecimientos)
                     {
-                        frase = frase + ", "; 
+                        frase = frase + establecimiento.ToString();
+                        if (i < numEstablecimientos - 1)
+                        {
+                            frase = frase + ", ";
+                        }
                     }
+                    else
+                    {
+                        frase = frase + " y " + establecimiento.ToString() + ".";
+                    }
+                    i++;
                 }
-                else
-                {
-                    frase = frase + " y " + establecimiento.ToString() + ".";
-                }
-                i++;
+            }else if (numEstablecimientos == 1)
+            {
+                frase = frase + establecimientos.First().ToString() + ".";
             }
+            
             return frase; 
         }
 
@@ -65,26 +117,38 @@ namespace SCONV_Proyecto.Controladores
         {
             string nombreEstablecimiento = peticion.QueryResult.Parameters.Fields.GetValueOrDefault("Establecimiento").StringValue;
             Establecimiento establecimiento = FachadaBbdd.GetSingleton().GetEstablecimientoByNombre(nombreEstablecimiento);
-            List<Plato> platosDeEstablecimiento = establecimiento.Platos;
+            List<Plato> platosDeEstablecimiento = FachadaBbdd.GetSingleton().GetPlatosDeEstablecimiento(establecimiento);
             int i = 1;
             int numPlatos = platosDeEstablecimiento.Count();
             string frase = "Pidiendo a "+nombreEstablecimiento+". Las opciones disponibles son: ";
-            foreach(Plato plato in platosDeEstablecimiento)
+            if (numPlatos > 1)
             {
-                if(i < numPlatos)
+                foreach (Plato plato in platosDeEstablecimiento)
                 {
-                    frase = frase + plato.ToString();
-                    if(i < numPlatos - 1)
+                    if (i < numPlatos)
                     {
-                        frase = frase + ", ";
+                        frase = frase + plato.ToString();
+                        if (i < numPlatos - 1)
+                        {
+                            frase = frase + ", ";
+                        }
                     }
+                    else
+                    {
+                        frase = frase + " y " + plato.ToString() + ".";
+                    }
+                    i++;
                 }
-                else
-                {
-                    frase = frase + " y " + establecimiento.ToString() + ".";
-                }
+            }else if (numPlatos == 1)
+            {
+                frase = frase + platosDeEstablecimiento.First().ToString()+".";
             }
-
+            else
+            {
+                frase = frase + "No hay opciones disponibles.";
+            }
+            frase = frase + "¿Qué desea?";
+            Pedido.establecimientoEnCurso = establecimiento; //Seteamos el establecimiento al que se está pidiendo
             return frase;
         }
 
@@ -98,15 +162,10 @@ namespace SCONV_Proyecto.Controladores
             string nombreEstablecimiento = Pedido.establecimientoEnCurso.Nombre;
             string nombrePlato = peticion.QueryResult.Parameters.Fields.GetValueOrDefault("Plato").StringValue;
             Plato plato = Pedido.establecimientoEnCurso.Platos.First(x => x.Nombre == nombrePlato);
-            string frase = "Añadiendo al pedido: " +plato.Nombre+ "¿Quiere algo más?";
+            string frase = "Añadiendo al pedido: " +plato.Nombre+ ". ¿Quiere algo más?";
             Pedido.AddPlatoAPedidoEnCurso(plato);
             return frase;
         }
-
-
-
-
-
 
     }
 }

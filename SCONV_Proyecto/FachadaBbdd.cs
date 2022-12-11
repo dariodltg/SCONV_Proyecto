@@ -68,9 +68,24 @@ namespace SCONV_Proyecto
             return bbddConnection.Platos.ToList();
         }
 
+        /// <summary>
+        /// Devuelve un establecimiento a partir de su nombre
+        /// </summary>
+        /// <param name="nombre">Nombre del establecimiento</param>
+        /// <returns>El establecimiento</returns>
         public Establecimiento GetEstablecimientoByNombre(string nombre)
         {
             return bbddConnection.Establecimientos.First(x => x.Nombre == nombre);
+        }
+
+        /// <summary>
+        /// Deuelve la lista de platos que pertenecen a un establecimiento dado
+        /// </summary>
+        /// <param name="establecimiento">El establecimiento</param>
+        /// <returns>La lista de platos</returns>
+        internal List<Plato> GetPlatosDeEstablecimiento(Establecimiento establecimiento)
+        {
+            return bbddConnection.Platos.Where(x => x.Establecimiento == establecimiento).ToList();
         }
 
         /// <summary>
@@ -96,7 +111,7 @@ namespace SCONV_Proyecto
             bbddConnection.Platos.Add(baconcrispyTelepizza);
             Plato carbonaraTelepizza = new Plato() { Nombre = "Carbonara", Establecimiento = telepizza, Precio = 9.25 };
             bbddConnection.Platos.Add(carbonaraTelepizza);
-            
+
             Plato pulledporkDominos = new Plato() { Nombre = "Pulled Pork", Establecimiento = dominospizza, Precio = 10.75 };
             bbddConnection.Platos.Add(pulledporkDominos);
             Plato buffaloChicken = new Plato() { Nombre = "Buffalo Chicken", Establecimiento = dominospizza, Precio = 10.50 };
@@ -108,11 +123,13 @@ namespace SCONV_Proyecto
             bbddConnection.Platos.Add(kingchickenBK);
 
             Plato bucket12TirasKFC = new Plato() { Nombre = "Bucket 12 Tiras de pollo", Establecimiento = kfc, Precio = 8.75 };
-            bbddConnection.Platos.Add(pulledporkDominos);
+            bbddConnection.Platos.Add(bucket12TirasKFC);
             Plato chickshare6piezasKFC = new Plato() { Nombre = "Chick&Share 6 piezas", Establecimiento = kfc, Precio = 7.50 };
-            bbddConnection.Platos.Add(buffaloChicken);
+            bbddConnection.Platos.Add(chickshare6piezasKFC);
 
             bbddConnection.SaveChanges();
         }
+
+        
     }
 }

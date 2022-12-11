@@ -14,6 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="establecimientos.db-shm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="ngrok.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
