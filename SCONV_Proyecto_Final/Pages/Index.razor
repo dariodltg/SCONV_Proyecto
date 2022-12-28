@@ -1,0 +1,35 @@
+﻿@page "/"
+@using Google.Cloud.Dialogflow.V2
+@using Google.Protobuf
+
+<PageTitle>Index</PageTitle>
+
+<h1>Bienvenido</h1>
+
+Inicie su pedido
+
+<input class="form-text" type="text" @bind-value="@inputUsuario">Prueba</input>
+<button class="btn btn-info" @onclick="EnviarFrase">Enviar</button>
+
+<label class="col-sm-2 control-label">@respuestaDialogFlow</label>
+
+@code {
+    public string respuestaDialogFlow { get; set; }
+
+    [Parameter] public string inputUsuario { get; set; }
+
+    private async Task EnviarFrase()
+    {
+        Console.WriteLine(inputUsuario);
+        string projectId = "sconv-proyecto-370810";
+        string sessionId = "123456789";
+        string languageCode = "es";
+        SessionsClient sessionsClient = SessionsClient.Create();
+        SessionName sesion = new SessionName(projectId,sessionId);
+        QueryInput queryInput = new QueryInput();
+        queryInput.Text = new TextInput() { Text = inputUsuario, LanguageCode = languageCode };
+        DetectIntentResponse respuesta = await sessionsClient.DetectIntentAsync(sesion, queryInput);
+        respuestaDialogFlow = respuesta.QueryResult.FulfillmentText;
+    }
+
+}
