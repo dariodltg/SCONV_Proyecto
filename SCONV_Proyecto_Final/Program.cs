@@ -33,7 +33,7 @@ namespace SCONV_Proyecto_Final
 
             app.MapBlazorHub();
             app.MapFallbackToPage("/_Host");
-
+            app.MapControllers();
             app.Run();
         }
     }
