@@ -31,6 +31,22 @@
     <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
     <script>
 
+        window.PlayAudioFile = (src) => {
+            var audio = document.getElementById('respuesta');
+            console.log("Encuentro el componente")
+            if (audio != null) {
+                var audioSource = document.getElementById('playerSource');
+                if (audioSource != null) {
+                    console.log("Encuentro el src")
+                    audioSource.src = src;
+                    console.log(src);
+                    audio.load();
+                    audio.play();
+                    console.log("Funciona")
+                }
+            }
+        }
+
         function startRecording() {
         navigator.getUserMedia({ audio: true }, onSuccess, onError);
         }

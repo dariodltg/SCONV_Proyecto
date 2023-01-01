@@ -33,7 +33,10 @@ Inicie su pedido
 
 <ul id="recordingsList"></ul>
 
-
+<audio controls id="respuesta">
+    <source id="playerSource" src="" />
+</audio>
+<button @onclick=ReproducirAudio>Probar reproducir</button>
 
 
 
@@ -58,7 +61,7 @@ Inicie su pedido
         respuestaDialogFlow = respuesta.QueryResult.FulfillmentText;
     }
 
-    private async Task EnviarAudio()
+    private async Task<DetectIntentResponse> EnviarAudio()
     {
 
         SessionsClient sessionsClient = SessionsClient.Create(); //TODO Compartir sessions client entre texto y voz no??
@@ -96,8 +99,7 @@ Inicie su pedido
         }
 
         DetectIntentResponse respuesta = await sessionsClient.DetectIntentAsync(peticion);
-
-        respuestaDialogFlow = respuesta.QueryResult.FulfillmentText;
+        return respuesta;
     }
 
 
@@ -122,9 +124,32 @@ Inicie su pedido
         recordButton = "record";
         recording = false;
         notRecording = true;
-
         await JS.InvokeVoidAsync("stopRecording");
-        await EnviarAudio();
+        DetectIntentResponse respuestaAudio = await EnviarAudio();
+        byte[] buffer = respuestaAudio.OutputAudio.ToByteArray();
+        var formato = new WaveFormat(16000, 16, 1);
+        using (WaveFileWriter writer = new WaveFileWriter("audios/grabacion.wav", formato))
+        {
+            writer.Write(buffer, 0, buffer.Length);
+        };
+        //Upload to wwwroot
+
+        using var stream = new MemoryStream(File.ReadAllBytes("audios/grabacion.wav").ToArray());
+        var formFile = new FormFile(stream, 0, stream.Length, "streamFile", "audios/grabacion.wav");
+        var fileName = Path.GetFileName(formFile.FileName);
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\", fileName);
+        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        {
+            await formFile.CopyToAsync(fileStream);
+        }
+        
+
+
+        await ReproducirAudio();
     }
 
+    async Task ReproducirAudio()
+    {
+        await JS.InvokeVoidAsync("PlayAudioFile", "grabacion.wav");
+    }
 }
