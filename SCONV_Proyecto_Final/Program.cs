@@ -34,7 +34,22 @@ namespace SCONV_Proyecto_Final
             app.MapBlazorHub();
             app.MapFallbackToPage("/_Host");
             app.MapControllers();
+            BorrarAudiosAntiguos();
             app.Run();
+        }
+
+        private static void BorrarAudiosAntiguos()
+        {
+            DirectoryInfo directorioServidor = new DirectoryInfo("audios");
+            foreach (FileInfo file in directorioServidor.GetFiles())
+            {
+                file.Delete();
+            }
+            DirectoryInfo directorioJavascript = new DirectoryInfo("wwwroot/audios");
+            foreach (FileInfo file in directorioJavascript.GetFiles())
+            {
+                file.Delete();
+            }
         }
     }
 }

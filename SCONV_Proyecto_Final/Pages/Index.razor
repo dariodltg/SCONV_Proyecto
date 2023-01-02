@@ -9,65 +9,97 @@
 
 <PageTitle>Index</PageTitle>
 
-<h1>Bienvenido</h1>
+<h1>Bienvenido, inicie su pedido</h1>
 
-Inicie su pedido
-
-<input class="form-text" type="text" @bind-value="@inputUsuario">Prueba</input>
-<button class="btn btn-info" @onclick="EnviarFrase">Enviar</button>
-
-<label class="col-sm-2 control-label">@respuestaDialogFlow</label>
-
-<div class="wrapper mt-5">
-    <section class="main-controls">
-        <canvas id="canvas" class="visualizer" height="60"></canvas>
-        <div id="buttons">
-            <button class="@recordButton" @onclick=Record>Record</button>
-            <button class="stop" @onclick=Stop>Stop</button>
+<div>
+    <div class="row">
+        <div class="col" style="background: rgba(0, 0, 200, 0.3); margin:10px; padding:10px" id="zonaPeticionesUsuario">
+            <h2 class="alert-heading">Peticiones del usuario</h2>
+            <div class="row" style="padding:10px">
+                <input class="form-text" type="text" @bind-value="@ultimoInputUsuario">Prueba</input>
+                <button class="btn btn-info" @onclick="EnviarFrase">Enviar</button>
+                <audio controls id="audioInput">
+                    <source id="audioInputUsuario" src="" />
+                </audio>
+                <section class="main-controls">
+                    <canvas id="canvas" class="visualizer" height="60"></canvas>
+                    <div id="buttons">
+                        <button class="@recordButton" @onclick=Record>Grabar</button>
+                        <button class="stop" @onclick=Stop>Parar</button>
+                    </div>
+                </section>
+                <ul class="list-group list-group-numbered" id="listaPeticionesUsuario">
+                    @foreach(string input in listaInputsUsuario)
+                    {
+                        <li>
+                            <label>@input</label>
+                        </li>
+                    }
+                </ul>
+            </div>          
         </div>
-    </section>
-    <canvas id="canvas" class="visualizer" height="60"></canvas>
-    <section class="sound-clips"></section>
-    <audio controls autoplay></audio>
+        <div class="col" style="background: rgba(0, 128, 0, 0.3); margin:10px; padding:10px" id="zonaRespuestasDialogflow">
+            <h2 class="alert-heading">Respuestas de DialogFlow</h2>
+            <div class="row" style="padding:10px">
+                <audio controls id="audioRespuesta" >
+                    <source id="audioRespuestaSource" src="" />
+                </audio>
+                <ul class="list-group list-group-numbered" id="listaRespuestasTexto">
+                    @foreach(string respuesta in listaRespuestasDialogFlow)
+                    {
+                        <li>
+                            <label>@respuesta</label>
+                        </li>
+                    }
+                </ul>
+            </div>           
+        </div>
+    </div>
 </div>
 
-<ul id="recordingsList"></ul>
-
-<audio controls id="respuesta">
-    <source id="playerSource" src="" />
-</audio>
-<button @onclick=ReproducirAudio>Probar reproducir</button>
-
+<!--<button @onclick=ReproducirAudio>Probar reproducir</button>-->
 
 
 @code {
-    public string respuestaDialogFlow { get; set; }
+    public string? respuestaDialogFlow { get; set; }
     public string projectId = "sconv-proyecto-370810";
     public string sessionId = "123456789";
     public string languageCode = "es";
 
-    public bool nuevoAudio = true;
+    [Parameter] public string? ultimoInputUsuario { get; set; }
+    public List<string>? listaInputsUsuario = new List<string>();
+    public List<string>? listaRespuestasDialogFlow = new List<string>();
 
-    [Parameter] public string inputUsuario { get; set; }
-
+    /// <summary>
+    /// Envía a DialogFlow la frase que el usuario ha insertado en la caja de texto.
+    /// </summary>
     private async Task EnviarFrase()
     {
-        Console.WriteLine(inputUsuario);
-        SessionsClient sessionsClient = SessionsClient.Create();
-        SessionName sesion = new SessionName(projectId,sessionId);
-        QueryInput queryInput = new QueryInput();
-        queryInput.Text = new TextInput() { Text = inputUsuario, LanguageCode = languageCode };
-        DetectIntentResponse respuesta = await sessionsClient.DetectIntentAsync(sesion, queryInput);
-        respuestaDialogFlow = respuesta.QueryResult.FulfillmentText;
+        if(ultimoInputUsuario!="" && ultimoInputUsuario != null)
+        {
+            Utilidades.IncrementarEtapaInteraccion();
+            listaInputsUsuario.Add(ultimoInputUsuario);
+            SessionsClient sessionsClient = SessionsClient.Create();
+            SessionName sesion = new SessionName(projectId, sessionId);
+            QueryInput queryInput = new QueryInput();
+            queryInput.Text = new TextInput() { Text = ultimoInputUsuario, LanguageCode = languageCode };
+            DetectIntentResponse respuesta = await sessionsClient.DetectIntentAsync(sesion, queryInput);
+            respuestaDialogFlow = respuesta.QueryResult.FulfillmentText;
+            listaRespuestasDialogFlow.Add(respuestaDialogFlow);
+            SubirAudio(respuesta);
+            await ReproducirAudio();
+        }
     }
 
+    /// <summary>
+    /// Envía a DialogFlow un audio que el usuario ha grabado.
+    /// </summary>
     private async Task<DetectIntentResponse> EnviarAudio()
     {
-
-        SessionsClient sessionsClient = SessionsClient.Create(); //TODO Compartir sessions client entre texto y voz no??
+        Utilidades.IncrementarEtapaInteraccion();
+        SessionsClient sessionsClient = SessionsClient.Create();
         SessionName sesion = new SessionName(projectId, sessionId);
         QueryInput queryInput = new QueryInput();
-
         queryInput.AudioConfig = new InputAudioConfig()
             {
                 AudioEncoding = AudioEncoding.Linear16,
@@ -78,9 +110,12 @@ Inicie su pedido
         peticion.SessionAsSessionName = sesion;
         peticion.QueryInput = queryInput;
 
-        string rutaWav = new DirectoryInfo("audios/").GetFiles()[0].Name;
         var formato = new WaveFormat(44100, 16, 1);
-
+        string rutaWav = "grabacion_usuario_"+Utilidades.etapaInteraccion+".wav";
+        while (!File.Exists("audios/"+rutaWav))
+        {
+            Thread.Sleep(50);
+        }
         using (WaveFileReader reader = new WaveFileReader("audios/"+rutaWav))
         {
             using (var resampler = new MediaFoundationResampler(reader, formato))
@@ -102,54 +137,65 @@ Inicie su pedido
         return respuesta;
     }
 
-
-
-    string recordButton = "record";
-
+    string recordButton = "grabar";
     bool recording = false;
     bool notRecording = true;
 
-
+    /// <summary>
+    /// Inicia la grabación de un audio del usuario
+    /// </summary>
     private async Task Record()
     {
-
-        recordButton = "recording";
+        recordButton = "grabando";
         recording = true;
         notRecording = false;
         await JS.InvokeVoidAsync("startRecording");
     }
 
+    /// <summary>
+    /// Detiene la grabación de un audio del usuario
+    /// </summary>
+    /// <returns></returns>
     private async Task Stop()
     {
-        recordButton = "record";
+        recordButton = "grabar";
         recording = false;
         notRecording = true;
         await JS.InvokeVoidAsync("stopRecording");
         DetectIntentResponse respuestaAudio = await EnviarAudio();
+
+
+        listaInputsUsuario.Add(respuestaAudio.QueryResult.QueryText);
+        listaRespuestasDialogFlow.Add(respuestaAudio.QueryResult.FulfillmentText);
+        SubirAudio(respuestaAudio);
+        await ReproducirAudio();
+    }
+
+    private void SubirAudio(DetectIntentResponse respuestaAudio)
+    {
         byte[] buffer = respuestaAudio.OutputAudio.ToByteArray();
-        var formato = new WaveFormat(16000, 16, 1);
-        using (WaveFileWriter writer = new WaveFileWriter("audios/grabacion.wav", formato))
+        var formato = new WaveFormat(24000, 16, 1);
+        string nombreWav = "grabacion_dialogflow_" + Utilidades.etapaInteraccion + ".wav";
+        using (WaveFileWriter writer = new WaveFileWriter("audios/"+nombreWav, formato))
         {
             writer.Write(buffer, 0, buffer.Length);
         };
-        //Upload to wwwroot
 
-        using var stream = new MemoryStream(File.ReadAllBytes("audios/grabacion.wav").ToArray());
-        var formFile = new FormFile(stream, 0, stream.Length, "streamFile", "audios/grabacion.wav");
+        //Upload to wwwroot
+        System.IO.Directory.CreateDirectory("wwwroot/audios/");
+        using var stream = new MemoryStream(File.ReadAllBytes("audios/"+nombreWav).ToArray());
+        var formFile = new FormFile(stream, 0, stream.Length, "streamFile", "audios/"+nombreWav);
         var fileName = Path.GetFileName(formFile.FileName);
-        var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\", fileName);
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/audios/", fileName);
         using (var fileStream = new FileStream(filePath, FileMode.Create))
         {
-            await formFile.CopyToAsync(fileStream);
+            formFile.CopyTo(fileStream);
         }
-        
-
-
-        await ReproducirAudio();
     }
 
     async Task ReproducirAudio()
     {
-        await JS.InvokeVoidAsync("PlayAudioFile", "grabacion.wav");
+        string nombreWav = "grabacion_dialogflow_" + Utilidades.etapaInteraccion + ".wav";
+        await JS.InvokeVoidAsync("ReproducirRespuestaAudio", "audios/"+nombreWav);
     }
 }

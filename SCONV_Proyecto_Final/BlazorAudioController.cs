@@ -9,6 +9,10 @@ namespace SCONV_Proyecto_Final
     public class BlazorAudioController : ControllerBase
     {
 
+        /// <summary>
+        /// Recibe un audio grabado en el frontend y lo guarda en el servidor.
+        /// </summary>
+        /// <param name="file">El audio en formato. wav</param>
         [HttpPost]
         public async Task<IActionResult> Save(IFormFile file)
         {
@@ -18,8 +22,8 @@ namespace SCONV_Proyecto_Final
             }
 
             string ruta = "audios/";
-            
-            var filePath = Path.Combine(ruta, file.FileName + ".wav");
+            int etapaInteraccion = Utilidades.etapaInteraccion;
+            var filePath = Path.Combine(ruta, file.FileName + "_"+etapaInteraccion+".wav");
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(fileStream);

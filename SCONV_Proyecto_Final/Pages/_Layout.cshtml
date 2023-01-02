@@ -31,24 +31,20 @@
     <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
     <script>
 
-        window.PlayAudioFile = (src) => {
-            var audio = document.getElementById('respuesta');
-            console.log("Encuentro el componente")
+        window.ReproducirRespuestaAudio = (src) => {
+            var audio = document.getElementById('audioRespuesta');
             if (audio != null) {
-                var audioSource = document.getElementById('playerSource');
+                var audioSource = document.getElementById('audioRespuestaSource');
                 if (audioSource != null) {
-                    console.log("Encuentro el src")
                     audioSource.src = src;
-                    console.log(src);
                     audio.load();
                     audio.play();
-                    console.log("Funciona")
                 }
             }
         }
 
         function startRecording() {
-        navigator.getUserMedia({ audio: true }, onSuccess, onError);
+            navigator.getUserMedia({ audio: true }, onSuccess, onError);
         }
 
         function stopRecording (element) {
@@ -84,23 +80,7 @@
             stop.onclick = function () {
                 recorder.stop();
 
-                recorder.exportWAV(function (s) {
-                    wav = window.URL.createObjectURL(s);
-                    audio.src = window.URL.createObjectURL(s);
-                    let filename = new Date().toISOString().replaceAll(':', "");
-                    let fd = new FormData();
-                    fd.append("file", s, filename);
-                    let xhr = new XMLHttpRequest();
-                    xhr.addEventListener("load", transferComplete);
-                    xhr.addEventListener("error", transferFailed)
-                    xhr.addEventListener("abort", transferFailed)
-                    xhr.open("POST", "api/SaveAudio/Save/", true);
-                    xhr.send(fd);
-
-                });
-
                 stop.disabled = true;
-
 
                 function transferComplete(evt) {
                     console.log("The transfer is complete.");
@@ -118,7 +98,7 @@
                 recorder.exportWAV(function (s) {
                     wav = window.URL.createObjectURL(s);
                     audio.src = window.URL.createObjectURL(s);
-                    let filename = new Date().toISOString().replaceAll(':', "");
+                    let filename = "grabacion_usuario";
                     let fd = new FormData();
                     fd.append("file", s, filename);
                     let xhr = new XMLHttpRequest();
