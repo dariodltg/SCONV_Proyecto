@@ -13,22 +13,30 @@
 
 <div>
     <div class="row">
-        <div class="col" style="background: rgba(0, 0, 200, 0.3); margin:10px; padding:10px" id="zonaPeticionesUsuario">
+        <div class="col rounded-3" style="background: rgba(0, 218, 255, 0.3); margin:10px; padding:10px" id="zonaPeticionesUsuario">
             <h2 class="alert-heading">Peticiones del usuario</h2>
             <div class="row" style="padding:10px">
-                <input class="form-text" type="text" @bind-value="@ultimoInputUsuario">Prueba</input>
-                <button class="btn btn-info" @onclick="EnviarFrase">Enviar</button>
-                <audio controls id="audioInput">
-                    <source id="audioInputUsuario" src="" />
-                </audio>
-                <section class="main-controls">
-                    <canvas id="canvas" class="visualizer" height="60"></canvas>
+                <div class="row">
+                    <audio controls id="audioInput">
+                        <source id="audioInputUsuario" src="" />
+                    </audio>
+                </div>
+                <div class="row" style="padding: 10px">
+                    <div class="col d-grid gap-2">
+                        <input class="form-control" type="text" @bind-value="@ultimoInputUsuario"></input>
+                        </div>
+                    <div class="col-2 d-grid gap-2">
+                        <button class="btn btn-primary" @onclick="EnviarFrase">Enviar</button>
+                    </div> 
+                </div>                            
+                <section class="main-controls">                                       
                     <div id="buttons">
-                        <button class="@recordButton" @onclick=Record>Grabar</button>
+                        <button class="record" @onclick=Record>Grabar</button>
                         <button class="stop" @onclick=Stop>Parar</button>
                     </div>
+                    <canvas id="canvas" class="visualizer" height="60" style="margin:5px"></canvas>
                 </section>
-                <ul class="list-group list-group-numbered" id="listaPeticionesUsuario">
+                <ul class="list-group list-group-numbered rounded-3" id="listaPeticionesUsuario" style="background: rgba(0, 218, 255, 0.6); margin-right:20px; padding:10px">
                     @foreach(string input in listaInputsUsuario)
                     {
                         <li>
@@ -38,13 +46,15 @@
                 </ul>
             </div>          
         </div>
-        <div class="col" style="background: rgba(0, 128, 0, 0.3); margin:10px; padding:10px" id="zonaRespuestasDialogflow">
+        <div class="col rounded-3" style="background: rgba(255, 165, 0, 0.3); margin:10px; padding:10px" id="zonaRespuestasDialogflow">
             <h2 class="alert-heading">Respuestas de DialogFlow</h2>
             <div class="row" style="padding:10px">
-                <audio controls id="audioRespuesta" >
-                    <source id="audioRespuestaSource" src="" />
-                </audio>
-                <ul class="list-group list-group-numbered" id="listaRespuestasTexto">
+                <div class="row" style="padding:10px">
+                    <audio controls id="audioRespuesta">
+                        <source id="audioRespuestaSource" src="" />
+                    </audio>
+                </div>                
+                <ul class="list-group list-group-numbered rounded-3" id="listaRespuestasTexto" style="background: rgba(255, 165, 0, 0.6);padding: 10px; margin-right: 20px">
                     @foreach(string respuesta in listaRespuestasDialogFlow)
                     {
                         <li>
@@ -114,7 +124,7 @@
         string rutaWav = "grabacion_usuario_"+Utilidades.etapaInteraccion+".wav";
         while (!File.Exists("audios/"+rutaWav))
         {
-            Thread.Sleep(50);
+            Thread.Sleep(100);
         }
         using (WaveFileReader reader = new WaveFileReader("audios/"+rutaWav))
         {
