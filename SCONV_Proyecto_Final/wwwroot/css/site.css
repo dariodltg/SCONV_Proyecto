@@ -64,7 +64,7 @@ a, .btn-link {
     }
 
 #buttons {
-    display: flex;
+    display: block;
     flex-direction: row;
     justify-content: space-between;
 }

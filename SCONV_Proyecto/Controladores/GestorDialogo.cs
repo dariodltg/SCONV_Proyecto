@@ -174,6 +174,10 @@ namespace SCONV_Proyecto.Controladores
         public static string EnumerarPlatosDeEstablecimiento(WebhookRequest peticion)
         {
             string nombreEstablecimiento = peticion.QueryResult.Parameters.Fields.GetValueOrDefault("Establecimiento").StringValue;
+            if(nombreEstablecimiento== null || nombreEstablecimiento == "")
+            {
+                return "Por favor, elija un establecimiento de las opciones disponibles.";
+            }
             Establecimiento establecimiento = FachadaBbdd.GetSingleton().GetEstablecimientoByNombre(nombreEstablecimiento);
             List<Plato> platosDeEstablecimiento = FachadaBbdd.GetSingleton().GetPlatosDeEstablecimiento(establecimiento);
             int i = 1;

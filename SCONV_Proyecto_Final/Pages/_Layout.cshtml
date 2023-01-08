@@ -65,7 +65,7 @@
 
             let mainSection = document.querySelector('.main-controls');
             const canvas = document.querySelector('.visualizer');
-            canvas.width = mainSection.offsetWidth;
+            canvas.width = mainSection.offsetWidth - 40;
 
             const canvasCtx = canvas.getContext("2d");
 
@@ -117,6 +117,7 @@
         // Credit: Soledad Penades of https://soledadpenades.com/ via https://mdn.github.io/web-dictaphone/
 
         function visualize(stream, canvas, canvasCtx) {
+            
             if (!audioCtx) {
                 audioCtx = new AudioContext();
             }
